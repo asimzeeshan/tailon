@@ -25,7 +25,7 @@ const app = createApp({
             script: null,
 
             linesOfHistory: 2000, // 0 for infinite history
-            linesToTail: 10,
+            linesToTail: 100,
             wrapLines: false,
 
             hideToolbar: false,
