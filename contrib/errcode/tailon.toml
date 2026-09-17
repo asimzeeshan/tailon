@@ -1,0 +1,39 @@
+# Example tailon config with two extra modes on top of tail and grep:
+#   search   grep the WHOLE file (not only the last N lines), case-insensitive, then follow
+#   errcode  paste a time-based reference code and jump to the entries written at that second
+#
+# Filespecs cannot live in this file; pass them as arguments after "-c tailon.toml".
+# This file replaces the built-in defaults entirely, so every command you want must be
+# defined here.
+#
+# SECURITY: allow-commands only controls what the UI offers. The server runs any command
+# that is DEFINED in the [commands] table, so define nothing you would not hand to every
+# user of the page. sed and awk are deliberately left out.
+title = "Log Files"
+relative-root = "/"
+listen-addr = [":8080"]
+allow-download = true
+allow-commands = ["tail", "grep", "search", "errcode"]
+
+[commands]
+
+  [commands.tail]
+  action = ["tail", "-n", "$lines", "-F", "$path"]
+
+  [commands.grep]
+  stdin = "tail"
+  action = ["grep", "--text", "--line-buffered", "--color=never", "-e", "$script"]
+  default = ".*"
+
+  # whole-file source for "search"; not listed in allow-commands, so hidden from the UI
+  [commands.tail-all]
+  action = ["tail", "-n", "+1", "-F", "$path"]
+
+  [commands.search]
+  stdin = "tail-all"
+  action = ["grep", "--text", "--line-buffered", "--color=never", "-i", "-n", "-e", "$script"]
+  default = ".*"
+
+  [commands.errcode]
+  action = ["/usr/local/bin/errcode", "$path", "$script"]
+  default = "APP-"
